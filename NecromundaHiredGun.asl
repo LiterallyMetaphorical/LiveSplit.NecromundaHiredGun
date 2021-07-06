@@ -1,4 +1,5 @@
-// NHG Load Remover
+// Contains functionality for load removal, autostart, and autosplitting.
+// Thanks to LongerWarrior for instance with mapID, i never knew wtf a uint was lmao
 
 state("Necromunda-Win64-Shipping")
 {
