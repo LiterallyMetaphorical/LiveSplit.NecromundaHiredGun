@@ -64,11 +64,11 @@ update
     vars.loading = 
     (
         (current.loading == 1)
-    || 
+/*    || 
         (
             (current.cutsceneState == 65793) && (current.mapID != 4294967295)
         )
-         
+        */ 
     );     
  //   print(current.cutsceneState.ToString());        
 }  
