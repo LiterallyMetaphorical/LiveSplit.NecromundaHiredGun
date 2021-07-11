@@ -5,7 +5,8 @@ state("Necromunda-Win64-Shipping")
 {
     byte loading : 0x53481E0;
     int cutsceneState : 0x50BC078;
-    uint mapID : 0x0553B8E8, 0xDE8, 0x5E0;
+//    uint mapID : 0x0553B8E8, 0xDE8, 0x5E0;
+    string250 objective : 0x055424C8, 0x1E8, 0xBD0
 }
 
 init
@@ -17,6 +18,7 @@ init
 
 startup
   {
+	  	refreshRate=30;
 		if (timer.CurrentTimingMethod == TimingMethod.RealTime)
 // Asks user to change to game time if LiveSplit is currently set to Real Time.
     {        
@@ -24,7 +26,7 @@ startup
             "This game uses Time without Loads (Game Time) as the main timing method.\n"+
             "LiveSplit is currently set to show Real Time (RTA).\n"+
             "Would you like to set the timing method to Game Time?",
-            "LiveSplit | Necromunda: Hired Gun",
+            "LiveSplit | Cyberpunk 2077",
             MessageBoxButtons.YesNo,MessageBoxIcon.Question
         );
         
@@ -51,34 +53,62 @@ startup
         if (textSetting != null)
         textSetting.GetType().GetProperty("Text2").SetValue(textSetting, text);
     });
+// Declares the name of the text component
+    settings.Add("quest_state", true, "Current Objective");
+
+// Dictionary containing all of the available objectives/quest states that can be split on	
+	vars.objectivename = new Dictionary<string,string>
+	{
+		{"08_drive_downtown","Meet Padre // Entered Padre's Car"}, //moves from Meet Padre - Meet Jackie
+		// Manual split for The Worst Ending
+	};
+	
+// split on specified objectives
+	settings.Add("Quest States", true);
+// Add objectives to setting list
+	foreach (var script in vars.objectivename) {
+		settings.Add(script.Key, true, script.Value, "Quest States");
+	}
 }
 
 start
 {
-    return (current.mapID == 1 && current.cutsceneState == 65793);
+    return (current.cutsceneState != old.cutsceneState);
 }
 
 update
 {
-    //tells isLoading to look for the value of 1 or if the game is currently in a cutscene (while also not being in the hub)
+	if (settings["quest_state"]) 
+    {
+      vars.SetTextComponent("Current Map", (current.objective)); 
+    }
+
+    //tells isLoading to look for the value of 1 or if the game is closed (crashed)
     vars.loading = 
     (
-        (current.loading == 1)
-/*    || 
+        (current.loading == 1) 
+    || 
         (
-            (current.cutsceneState == 65793) && (current.mapID != 4294967295)
-        )
-        */ 
+                (current.cutsceneState == 65793) && (current.objective !="/Game/Maps/Solo/M00_MartyrsEnd/LVL_MartyrsEnd")
+        ) 
+    ||
+        (String.IsNullOrEmpty(current.objective))
     );     
- //   print(current.cutsceneState.ToString());        
-}  
+  //  print(current.objective);
+  //  print(current.cutsceneState.ToString());  
+}        
 
 split
 {
-    return current.mapID != old.mapID && current.loading == 1;
+    return current.objective != old.objective && current.objective != "/Game/Maps/Solo/M00_MartyrsEnd/LVL_MartyrsEnd";
 }
 
 isLoading
 {
     return vars.loading;
+}
+
+exit
+{
+    vars.loading = false;
 }
